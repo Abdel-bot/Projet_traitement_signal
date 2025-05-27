@@ -1,0 +1,19 @@
+# Fichiers de build Qt
+build-*/
+Makefile*
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.exe
+
+# Fichiers Qt Creator
+*.pro.user
+*.pro.user.*
+*.creator.user
+*.autosave
+.DS_Store
+
+# Fichiers divers
+*.log
