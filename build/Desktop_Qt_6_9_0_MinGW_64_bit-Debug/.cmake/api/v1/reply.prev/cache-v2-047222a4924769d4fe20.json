@@ -1602,6 +1602,42 @@
 			"value" : "C:/Users/abdel/Documents/Projet_traitement_signal"
 		},
 		{
+			"name" : "Projet_traitement_signal_qt_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/Users/abdel/Documents/Projet_traitement_signal/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug"
+		},
+		{
+			"name" : "Projet_traitement_signal_qt_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "Projet_traitement_signal_qt_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/Users/abdel/Documents/Projet_traitement_signal"
+		},
+		{
 			"name" : "QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH",
 			"properties" : 
 			[

@@ -1,24 +1,23 @@
 #ifndef PAGEPRINCIPAL_H
 #define PAGEPRINCIPAL_H
 
-#include <QMainWindow>
-#include "audioloader.h"
-#include <QThread>
-#include <QFileDialog>
-#include <QGraphicsScene>
-#include <QGraphicsPathItem>
-#include <QPainterPath>
 #include <QAudioOutput>
-#include <QMediaPlayer>
-#include <QMessageBox>
-#include <QMediaRecorder>
-#include <QTextStream>
+#include <QEvent>
 #include <QFile>
-#include<QEvent>
+#include <QFileDialog>
+#include <QGraphicsPathItem>
+#include <QGraphicsScene>
+#include <QMainWindow>
+#include <QMediaPlayer>
+#include <QMediaRecorder>
+#include <QMessageBox>
 #include <QMouseEvent>
+#include <QPainterPath>
+#include <QTextStream>
+#include <QThread>
 #include <QToolTip>
+#include "audioloader.h"
 #include "fft.h"
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -40,7 +39,7 @@ protected:
 
 private slots:
     void ouvrir_fichier();
-    void Echantillonspret(const QVector<float>& samples, int sr);
+    void Echantillonspret(const QVector<float> &samples, int sr);
     void ouvrir_clicker();
     void dessin_signal();
     void enregistrer();
@@ -56,24 +55,22 @@ private slots:
     void importer();
 
 private:
-    QGraphicsScene* scene_;
-    QGraphicsPathItem* waveformItem_ = nullptr;
+    QGraphicsScene *scene_;
+    QGraphicsPathItem *waveformItem_ = nullptr;
     Ui::Pageprincipal *ui;
     AudioLoader loader;
     QString fichier;
     QVector<float> Signal_;
     int Fe_ = 0;
     void drawAxes();
-    QMediaRecorder* recorder = nullptr;
+    QMediaRecorder *recorder = nullptr;
     fft fft_;
-    QMediaPlayer* player = nullptr;
-    QAudioOutput* audiooutput=nullptr;
+    QMediaPlayer *player = nullptr;
+    QAudioOutput *audiooutput = nullptr;
     QList<QAudioDevice> deviceout;
-    QGraphicsLineItem*   Barredelecture;
-    QTimer* playHeadTimer_;
+    QGraphicsLineItem *Barredelecture;
+    QTimer *playHeadTimer_;
     double facteur_zoom;
 };
-
-
 
 #endif // PAGEPRINCIPAL_H

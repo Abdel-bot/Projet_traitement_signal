@@ -525,7 +525,7 @@
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
-	"PARALLEL" : 4,
+	"PARALLEL" : 6,
 	"PARSE_CACHE_FILE" : "C:/Users/abdel/Documents/Projet_traitement_signal/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/CMakeFiles/Projet_traitement_signal_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "C:/Qt/6.9.0/mingw_64/bin/moc.exe",
 	"QT_UIC_EXECUTABLE" : "C:/Qt/6.9.0/mingw_64/bin/uic.exe",

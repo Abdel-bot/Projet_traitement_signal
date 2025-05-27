@@ -222,7 +222,7 @@ public:
         Pageprincipal->setCentralWidget(centralwidget);
         menubar = new QMenuBar(Pageprincipal);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 916, 22));
+        menubar->setGeometry(QRect(0, 0, 916, 21));
         QSizePolicy sizePolicy4(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);

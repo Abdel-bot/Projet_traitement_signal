@@ -3,13 +3,14 @@
 AudioLoader::AudioLoader(QObject *parent)
     : QObject{parent}
 {
-    connect(&decoder, &QAudioDecoder::bufferReady,this, &AudioLoader::SiBufferPret);
-    connect(&decoder, &QAudioDecoder::finished,this, &AudioLoader::finished);
+    connect(&decoder, &QAudioDecoder::bufferReady, this, &AudioLoader::SiBufferPret);
+    connect(&decoder, &QAudioDecoder::finished, this, &AudioLoader::finished);
 }
 
-void AudioLoader::loadFile(const QString& path){
+void AudioLoader::loadFile(const QString &path)
+{
     QAudioFormat targetFormat;
-    targetFormat.setSampleRate(8000);               // ou récupérer la fréquence du fichier
+    targetFormat.setSampleRate(8000); // ou récupérer la fréquence du fichier
     targetFormat.setSampleFormat(QAudioFormat::UInt8);
     decoder.setAudioFormat(targetFormat);
 
@@ -17,12 +18,13 @@ void AudioLoader::loadFile(const QString& path){
     decoder.start();
 }
 
-void AudioLoader::SiBufferPret(){
+void AudioLoader::SiBufferPret()
+{
     QAudioBuffer buf = decoder.read();
     auto fmt = buf.format();
     const int channelCount = fmt.channelCount();
-    const int frames       = buf.frameCount();
-    const int Fs_orig      = fmt.sampleRate();
+    const int frames = buf.frameCount();
+    const int Fs_orig = fmt.sampleRate();
 
     if (!buf.isValid() || frames == 0) {
         qWarning() << "Buffer invalide ou vide";
@@ -36,14 +38,14 @@ void AudioLoader::SiBufferPret(){
     // Pointeurs sur les données
     if (fmt.sampleFormat() == QAudioFormat::Int16) {
         const float norm = 1.0f / std::numeric_limits<qint16>::max();
-        const auto ptr   = buf.constData<qint16>();
+        const auto ptr = buf.constData<qint16>();
 
         // Lecture et down-sampling en une passe
         for (int i = 0; i < frames; ++i) {
             // Pour chaque canal, on moyennise, puis on teste si on garde
             float sample = 0;
             for (int c = 0; c < channelCount; ++c)
-                sample += ptr[i*channelCount + c] * norm;
+                sample += ptr[i * channelCount + c] * norm;
             sample /= channelCount;
 
             // NE GARDER QUE 1 échantillon sur downFactor
@@ -51,31 +53,26 @@ void AudioLoader::SiBufferPret(){
                 block.append(sample);
             }
         }
-    }
-    else if (fmt.sampleFormat() == QAudioFormat::Float) {
+    } else if (fmt.sampleFormat() == QAudioFormat::Float) {
         const auto ptr = buf.constData<float>();
         for (int i = 0; i < frames; ++i) {
             float sample = 0;
             for (int c = 0; c < channelCount; ++c)
-                sample += ptr[i*channelCount + c];
+                sample += ptr[i * channelCount + c];
             sample /= channelCount;
 
             if ((sampleCounter++ % downFactor) == 0) {
                 block.append(sample);
             }
         }
-    }
-    else {
+    } else {
         qWarning() << "Format non géré :" << fmt.sampleFormat();
         return;
     }
 
     // La nouvelle fréquence d'échantillonnage est divisée par downFactor
     const int Fs_down = Fs_orig / downFactor;
-    qDebug() << "Emet" << block.size()
-             << "échantillons à" << Fs_down << "Hz";
+    qDebug() << "Emet" << block.size() << "échantillons à" << Fs_down << "Hz";
 
     emit SignalReady(block, Fs_down);
 }
-
-

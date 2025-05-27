@@ -1,15 +1,15 @@
 #ifndef FFT_H
 #define FFT_H
 
-#include <QWidget>
-#include<cmath>
-#include<complex>
-#include <QGraphicsScene>
+#include <QEvent>
 #include <QGraphicsPathItem>
-#include <QPainterPath>
-#include<QEvent>
+#include <QGraphicsScene>
 #include <QMouseEvent>
+#include <QPainterPath>
 #include <QToolTip>
+#include <QWidget>
+#include <cmath>
+#include <complex>
 
 using namespace std;
 namespace Ui {
@@ -25,30 +25,28 @@ public:
     ~fft();
 
 public slots:
-    void recupsignal(const QVector<float>& samples, int sr);
+    void recupsignal(const QVector<float> &samples, int sr);
 private slots:
 
     void calculedelafft();
     void dessin_spectre();
+
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
-    QGraphicsScene* scene_;
-    QGraphicsPathItem* waveformItem_ = nullptr;
+    QGraphicsScene *scene_;
+    QGraphicsPathItem *waveformItem_ = nullptr;
     void zeropadding();
     bool puissancede2();
     int reverse_bit(int x, unsigned bits);
-    void bitReversalPermutation(QVector<std::complex<double>>& a);
+    void bitReversalPermutation(QVector<std::complex<double>> &a);
     QVector<complex<double>> fft_;
-    QVector<double>Signal_;
+    QVector<double> Signal_;
     int Fe_;
     Ui::fft *ui;
     void drawAxes();
     double facteur_zoom;
 };
-
-
-
 
 #endif // FFT_H

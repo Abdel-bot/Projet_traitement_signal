@@ -3,23 +3,22 @@
 
 fft::fft(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::fft),scene_(new QGraphicsScene(this))
+    , ui(new Ui::fft)
+    , scene_(new QGraphicsScene(this))
 {
-
     ui->setupUi(this);
     ui->graphicsView->setScene(scene_);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     ui->graphicsView->viewport()->installEventFilter(this);
-
-
 }
 
 fft::~fft()
 {
     delete ui;
 }
-void fft::calculedelafft() {
+void fft::calculedelafft()
+{
     // 1) Zero-padding si nécessaire
     if (!puissancede2()) {
         zeropadding();
@@ -27,7 +26,7 @@ void fft::calculedelafft() {
 
     // 2) Copie du signal
     QVector<std::complex<double>> a;
-    for(int i=0;i<Signal_.size();i++){
+    for (int i = 0; i < Signal_.size(); i++) {
         a.append(Signal_[i]);
     }
     int n = a.size();
@@ -38,8 +37,8 @@ void fft::calculedelafft() {
     // 4) Boucle principale Cooley–Tukey
     int maxStages = static_cast<int>(std::log2(n));
     for (int s = 1; s <= maxStages; ++s) {
-        int m = 1 << s;               // m = 2^s
-        int half = m >> 1;            // m/2
+        int m = 1 << s;    // m = 2^s
+        int half = m >> 1; // m/2
         // Twiddle factor de base W_m
         std::complex<double> Wm = std::exp(std::complex<double>(0, -2.0 * M_PI / m));
         for (int k = 0; k < n; k += m) {
@@ -48,7 +47,7 @@ void fft::calculedelafft() {
                 // Butterfly : u + w * t, u - w * t
                 std::complex<double> t = w * a[k + j + half];
                 std::complex<double> u = a[k + j];
-                a[k + j]       = u + t;
+                a[k + j] = u + t;
                 a[k + j + half] = u - t;
                 w *= Wm;
             }
@@ -59,17 +58,21 @@ void fft::calculedelafft() {
     fft_ = a;
     dessin_spectre();
 }
-bool fft::puissancede2(){
-    return Signal_.size() > 0 && (Signal_.size() & (Signal_.size() - 1)) == 0;}
+bool fft::puissancede2()
+{
+    return Signal_.size() > 0 && (Signal_.size() & (Signal_.size() - 1)) == 0;
+}
 
-void fft::zeropadding() {
+void fft::zeropadding()
+{
     // Exemples : si taille=6 → puissance=8
     int puissance = 1 << static_cast<int>(std::ceil(std::log2(Signal_.size())));
     for (int i = Signal_.size(); i < puissance; i++) {
         Signal_.append(0.0);
     }
 }
-int fft::reverse_bit(int x, unsigned bits) {
+int fft::reverse_bit(int x, unsigned bits)
+{
     uint32_t ux = static_cast<uint32_t>(x);
     uint32_t y = 0;
     for (unsigned i = 0; i < bits; ++i) {
@@ -79,7 +82,8 @@ int fft::reverse_bit(int x, unsigned bits) {
     return static_cast<int>(y);
 }
 
-void fft::bitReversalPermutation(QVector<std::complex<double>>& a) {
+void fft::bitReversalPermutation(QVector<std::complex<double>> &a)
+{
     int n = a.size();
     unsigned bits = static_cast<unsigned>(std::log2(n));
     for (int i = 0; i < n; ++i) {
@@ -114,7 +118,8 @@ void fft::dessin_spectre()
     double maxMag = 0.0;
     for (int k = 0; k < half; ++k)
         maxMag = std::max(maxMag, std::abs(fft_[k]));
-    if (maxMag == 0.0) maxMag = 1.0;  // éviter la division par zéro
+    if (maxMag == 0.0)
+        maxMag = 1.0; // éviter la division par zéro
 
     // 2) Construire le chemin du spectre
     QPainterPath path;
@@ -138,13 +143,14 @@ void fft::dessin_spectre()
     scene_->addPath(path, QPen(Qt::blue, 2));
     ui->graphicsView->fitInView(scene_->itemsBoundingRect(), Qt::KeepAspectRatio);
 
-    qDebug() << "Spectre tracé pour" << half << "bins jusqu'à" << (Fe_/2) << "Hz";
+    qDebug() << "Spectre tracé pour" << half << "bins jusqu'à" << (Fe_ / 2) << "Hz";
 }
-void fft::recupsignal(const QVector<float>& samples, int sr){
+void fft::recupsignal(const QVector<float> &samples, int sr)
+{
     Fe_ = sr;
     Signal_.resize(samples.size());
     for (int i = 0; i < samples.size(); ++i)
-        Signal_[i] = samples[i];    // ← redimensionne Signal_ à samples.size()
+        Signal_[i] = samples[i]; // ← redimensionne Signal_ à samples.size()
     calculedelafft();
 }
 void fft::drawAxes()
@@ -159,35 +165,33 @@ void fft::drawAxes()
     // Axe vertical (amplitude)
     scene_->addLine(0, 0, 0, h, axisPen);
 }
-bool fft::eventFilter(QObject *watched, QEvent *event) {
+bool fft::eventFilter(QObject *watched, QEvent *event)
+{
     if (watched == ui->graphicsView->viewport() && event->type() == QEvent::Wheel) {
         // Cast correct pour Qt6 : QEvent* vers QWheelEvent*
-        const QWheelEvent *roue = static_cast<QWheelEvent*>(event);
+        const QWheelEvent *roue = static_cast<QWheelEvent *>(event);
         const qreal angle = roue->angleDelta().y();
         const qreal facteur = qPow(1.0015, angle);
         facteur_zoom *= facteur;
         ui->graphicsView->scale(facteur, facteur);
         return true;
     }
-    if(watched==ui->graphicsView->viewport() && event->type() == QEvent::MouseMove){
+    if (watched == ui->graphicsView->viewport() && event->type() == QEvent::MouseMove) {
         int w = ui->graphicsView->viewport()->width();
         int h = ui->graphicsView->viewport()->height();
 
         qreal maxFreq = Fe_ / 2.0;
-        qreal pxPerHz = w / maxFreq;                              // pixels par seconde
-        auto *mouseEv = static_cast<QMouseEvent*>(event);
+        qreal pxPerHz = w / maxFreq; // pixels par seconde
+        auto *mouseEv = static_cast<QMouseEvent *>(event);
         QPoint ptVue = mouseEv->pos();
         QPointF ptScene = ui->graphicsView->mapToScene(ptVue);
         float frequence = ptScene.x() / pxPerHz;
-        float amp   = -ptScene.y() / h;
-        QString txt = tr("frequence : %1 Hz\nAmplitude : %2").
-                      arg(frequence, 0, 'f', 1).
-                      arg(amp,   0, 'f', 2);
-        QToolTip::showText(
-            ui->graphicsView->viewport()->mapToGlobal(ptVue),
-            txt,
-            ui->graphicsView->viewport()
-            );
+        float amp = -ptScene.y() / h;
+        QString txt
+            = tr("frequence : %1 Hz\nAmplitude : %2").arg(frequence, 0, 'f', 1).arg(amp, 0, 'f', 2);
+        QToolTip::showText(ui->graphicsView->viewport()->mapToGlobal(ptVue),
+                           txt,
+                           ui->graphicsView->viewport());
         return false;
     }
     return QWidget::eventFilter(watched, event);
