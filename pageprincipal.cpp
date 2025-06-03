@@ -312,13 +312,19 @@ void Pageprincipal::envoyersignal()
         qWarning() << "Échec de l'invocation du slot recupsignal";
     }
 }
-void Pageprincipal::playersource(){
+void Pageprincipal::playersource()
+{
     player->setSource(QUrl::fromLocalFile(fichier));
-    Barredelecture = nullptr;
+    if (Barredelecture) {
+        scene_->removeItem(Barredelecture);
+        delete Barredelecture;
+        Barredelecture = nullptr;
+    }
 }
-void Pageprincipal::deviceoutchoisi(){
+void Pageprincipal::deviceoutchoisi()
+{
     delete audiooutput;
-    audiooutput = new QAudioOutput(deviceout[ui->Devicesout->currentIndex()]);
+    audiooutput = new QAudioOutput(deviceout[ui->Devicesout->currentIndex()], this);
     player->setAudioOutput(audiooutput);
 }
 void Pageprincipal::lire(){
