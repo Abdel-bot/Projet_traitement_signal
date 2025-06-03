@@ -187,7 +187,11 @@ bool fft::eventFilter(QObject *watched, QEvent *event)
         QPointF ptScene = ui->graphicsView->mapToScene(ptVue);
         float frequence = ptScene.x() / pxPerHz;
         float amp   = -ptScene.y() / h;
-        if(fft_.size()>2) amp   = (abs(fft_[ptScene.x()/pxPerHz*Fe_]));
+        if (fft_.size() > 0) {
+            int N = fft_.size();
+            int idx = qBound(0, int(frequence * N / Fe_), N - 1);
+            amp = std::abs(fft_[idx]);
+        }
         QString txt = tr("frequence : %1 Hz\nAmplitude : %2").
                       arg(frequence, 0, 'f', 1).
                       arg(amp,   0, 'f', 2);

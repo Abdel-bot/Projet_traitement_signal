@@ -39,8 +39,6 @@ Pageprincipal::Pageprincipal(QWidget *parent)
 
     connect(ui->actionOuvrir, &QAction::triggered, this, &Pageprincipal::ouvrir_clicker);
 
-    connect(ui->actionOuvrir,&QAction::triggered,this,&Pageprincipal::ouvrir_clicker);
-
 
     deviceoutchoisi();
 
@@ -319,7 +317,9 @@ void Pageprincipal::playersource(){
     Barredelecture = nullptr;
 }
 void Pageprincipal::deviceoutchoisi(){
-    player->setAudioOutput(new QAudioOutput(deviceout[ui->Devicesout->currentIndex()]));
+    delete audiooutput;
+    audiooutput = new QAudioOutput(deviceout[ui->Devicesout->currentIndex()]);
+    player->setAudioOutput(audiooutput);
 }
 void Pageprincipal::lire(){
     player->play();
@@ -375,8 +375,10 @@ bool Pageprincipal::eventFilter(QObject *watched, QEvent *event)
         QPointF ptScene = ui->graphicsView->mapToScene(ptVue);
         float temps = ptScene.x() / kx;
         float amp = -ptScene.y() / ky;
-        if (Signal_.size() > 2)
-            amp = (Signal_[ptScene.x() / kx * Fe_]);
+        if (Signal_.size() > 2) {
+            int idx = qBound(0, int(ptScene.x() / kx * Fe_), N - 1);
+            amp = Signal_[idx];
+        }
         QString txt = tr("Temps : %1 ms\nAmplitude : %2").arg(temps, 0, 'f', 1).arg(amp, 0, 'f', 2);
         QToolTip::showText(ui->graphicsView->viewport()->mapToGlobal(ptVue),
                            txt,
