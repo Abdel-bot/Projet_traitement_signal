@@ -1,0 +1,27 @@
+# ----------------------------------------
+# Ignorer tout le répertoire de build Qt/CMake
+build/
+build/**
+
+# Fichiers générés par Ninja, CMake, Qt Creator, clangd, etc.
+*.ninja_deps
+*.ninja_log
+**/CMakeFiles/
+**/Projet_traitement_signal_autogen/
+**/.qtc_clangd/
+**/*.idx
+
+# Fichiers d’interface Qt générés
+build/**/*.h
+build/**/*.cpp
+
+# Fichiers .user (Qt Creator / CMake user)
+CMakeLists.txt.user
+*.pro.user
+*.pro.user.*
+*.qbs.user
+
+# Logs, temporaires, et autres
+*.log
+*~
+
