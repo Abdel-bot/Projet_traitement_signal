@@ -328,8 +328,8 @@ void Pageprincipal::envoyersignal()
     if (!ok) {
         qWarning() << "Échec de l'invocation du slot recupsignal";
     }
-}
-// Met à jour la source du QMediaPlayer et réinitialise la barre de lecture
+
+// Met à jour la source du QMediaPlayer et réinitialise la barre de lectur
 void Pageprincipal::playersource()
 {
     player->setSource(QUrl::fromLocalFile(fichier));
@@ -338,7 +338,7 @@ void Pageprincipal::playersource()
         delete Barredelecture;
         Barredelecture = nullptr;
     }
-}
+
 // Applique le périphérique de sortie sélectionné
 void Pageprincipal::deviceoutchoisi()
 {
