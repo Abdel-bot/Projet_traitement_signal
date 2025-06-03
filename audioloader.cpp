@@ -1,5 +1,6 @@
 #include "audioloader.h"
 
+// Constructeur : connecte le décodeur à nos slots de traitement
 AudioLoader::AudioLoader(QObject *parent)
     : QObject{parent}
 {
@@ -7,6 +8,7 @@ AudioLoader::AudioLoader(QObject *parent)
     connect(&decoder, &QAudioDecoder::finished, this, &AudioLoader::finished);
 }
 
+// Prépare et lance le décodage du fichier `path`
 void AudioLoader::loadFile(const QString &path)
 {
     QAudioFormat targetFormat;
@@ -18,6 +20,7 @@ void AudioLoader::loadFile(const QString &path)
     decoder.start();
 }
 
+// Traite un buffer décodé et émet un échantillonnage réduit
 void AudioLoader::SiBufferPret()
 {
     QAudioBuffer buf = decoder.read();
@@ -74,5 +77,6 @@ void AudioLoader::SiBufferPret()
     const int Fs_down = Fs_orig / downFactor;
     qDebug() << "Emet" << block.size() << "échantillons à" << Fs_down << "Hz";
 
+    // Transmission du bloc décodé au reste de l'application
     emit SignalReady(block, Fs_down);
 }
