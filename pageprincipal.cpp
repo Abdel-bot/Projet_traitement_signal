@@ -9,10 +9,17 @@
 #include <QTimer>
 #include "./ui_pageprincipal.h"
 
+// Constructeur principal : mise en place de l'interface et des connexions
 Pageprincipal::Pageprincipal(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::Pageprincipal),scene_(new QGraphicsScene(this)),recorder(new QMediaRecorder(this)),player(new QMediaPlayer(this)),audiooutput(new QAudioOutput(this)),Barredelecture(nullptr),
-    facteur_zoom(1),rectItem(new QGraphicsRectItem())
+    , ui(new Ui::Pageprincipal)
+    , scene_(new QGraphicsScene(this))
+    , recorder(new QMediaRecorder(this))
+    , player(new QMediaPlayer(this))
+    , audiooutput(new QAudioOutput(this))
+    , Barredelecture(nullptr)
+    , facteur_zoom(1)
+    , rectItem(new QGraphicsRectItem())
 {
     ui->setupUi(this);
 
@@ -39,8 +46,6 @@ Pageprincipal::Pageprincipal(QWidget *parent)
 
     connect(ui->actionOuvrir, &QAction::triggered, this, &Pageprincipal::ouvrir_clicker);
 
-    connect(ui->actionOuvrir,&QAction::triggered,this,&Pageprincipal::ouvrir_clicker);
-
 
     deviceoutchoisi();
 
@@ -63,10 +68,12 @@ Pageprincipal::Pageprincipal(QWidget *parent)
 
 }
 
+// Destructeur : nettoyage de l'interface
 Pageprincipal::~Pageprincipal()
 {
     delete ui;
 }
+// Affiche un QFileDialog et charge le fichier audio choisi
 void Pageprincipal::ouvrir_fichier()
 {
     fichier = QFileDialog::getOpenFileName(this,
@@ -78,6 +85,7 @@ void Pageprincipal::ouvrir_fichier()
     Signal_.clear();
     setupAudioThread(fichier, this);
 }
+// Reception des echantillons decodes par AudioLoader
 void Pageprincipal::Echantillonspret(const QVector<float> &samples, int sr)
 {
     if (Signal_.isEmpty()) {
@@ -88,6 +96,7 @@ void Pageprincipal::Echantillonspret(const QVector<float> &samples, int sr)
     // Dès que des échantillons arrivent, dessiner
     dessin_signal();
 }
+// Trace les axes de temps et d'amplitude
 void Pageprincipal::drawAxes()
 {
     const int w = ui->graphicsView->viewport()->width();
@@ -100,6 +109,7 @@ void Pageprincipal::drawAxes()
     // Axe vertical (amplitude)
     scene_->addLine(0, 0, 0, h, axisPen);
 }
+// Slot appelé lorsque l'utilisateur choisit "Ouvrir"
 void Pageprincipal::ouvrir_clicker()
 {
     ouvrir_fichier();
@@ -108,6 +118,7 @@ void Pageprincipal::ouvrir_clicker()
     }
     ui->actionExporter_wav->setEnabled(false);
 }
+// Construit le tracé de la forme d'onde dans la scène
 void Pageprincipal::dessin_signal()
 {
     // Nettoyage de l'ancien tracé
@@ -145,6 +156,7 @@ void Pageprincipal::dessin_signal()
     ui->graphicsView->fitInView(scene_->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
 }
 
+// Démarre ou arrête l'enregistrement du microphone
 void Pageprincipal::enregistrer()
 {
     // Ces objets statiques persistent entre les appels
@@ -190,6 +202,7 @@ void Pageprincipal::enregistrer()
     // Mise à jour de l’UI
     ui->BonttonEnregistrer->setText(tr("Arrêter"));
 }
+// Slot de retour du QMediaRecorder lorsqu'il change d'état
 void Pageprincipal::Sienregistrementchange(QMediaRecorder::RecorderState etat)
 {
     if (etat == QMediaRecorder::StoppedState) {
@@ -198,6 +211,7 @@ void Pageprincipal::Sienregistrementchange(QMediaRecorder::RecorderState etat)
         setupAudioThread(fichier, this);
     }
 }
+// Importe un signal depuis un fichier CSV
 void Pageprincipal::essai()
 {
     // 1) Boîte de dialogue pour choisir le fichier CSV à importer
@@ -286,7 +300,7 @@ void Pageprincipal::essai()
     dessin_signal();
 }
 
-// Utilitaire de découpage et trim
+// Utilitaire de découpage d'une ligne CSV et suppression des espaces
 QStringList Pageprincipal::separerlignecsv(const QString &line, QChar sep)
 {
     QStringList parts = line.split(sep);
@@ -294,6 +308,7 @@ QStringList Pageprincipal::separerlignecsv(const QString &line, QChar sep)
         p = p.trimmed();
     return parts;
 }
+// Ouvre la fenêtre FFT et lui envoie le signal courant
 void Pageprincipal::envoyersignal()
 {
     fft *fft = &fft_;
@@ -314,16 +329,28 @@ void Pageprincipal::envoyersignal()
         qWarning() << "Échec de l'invocation du slot recupsignal";
     }
 }
-void Pageprincipal::playersource(){
+// Met à jour la source du QMediaPlayer et réinitialise la barre de lecture
+void Pageprincipal::playersource()
+{
     player->setSource(QUrl::fromLocalFile(fichier));
-    Barredelecture = nullptr;
+    if (Barredelecture) {
+        scene_->removeItem(Barredelecture);
+        delete Barredelecture;
+        Barredelecture = nullptr;
+    }
 }
-void Pageprincipal::deviceoutchoisi(){
-    player->setAudioOutput(new QAudioOutput(deviceout[ui->Devicesout->currentIndex()]));
+// Applique le périphérique de sortie sélectionné
+void Pageprincipal::deviceoutchoisi()
+{
+    delete audiooutput;
+    audiooutput = new QAudioOutput(deviceout[ui->Devicesout->currentIndex()], this);
+    player->setAudioOutput(audiooutput);
 }
+// Démarre la lecture du fichier audio
 void Pageprincipal::lire(){
     player->play();
 }
+// Dessine ou met à jour la barre indiquant la position de lecture
 void Pageprincipal::barrelecture()
 {
     const int h = ui->graphicsView->viewport()->height();
@@ -343,14 +370,17 @@ void Pageprincipal::barrelecture()
     }
     ui->graphicsView->centerOn(Barredelecture);
 }
+// Met la lecture en pause
 void Pageprincipal::pause()
 {
     player->pause();
 }
+// Stoppe complètement la lecture
 void Pageprincipal::stop()
 {
     player->stop();
 }
+// Gestion du zoom, du tooltip et de la sélection dans la vue
 bool Pageprincipal::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->graphicsView->viewport() && event->type() == QEvent::Wheel) {
@@ -375,8 +405,10 @@ bool Pageprincipal::eventFilter(QObject *watched, QEvent *event)
         QPointF ptScene = ui->graphicsView->mapToScene(ptVue);
         float temps = ptScene.x() / kx;
         float amp = -ptScene.y() / ky;
-        if (Signal_.size() > 2)
-            amp = (Signal_[ptScene.x() / kx * Fe_]);
+        if (Signal_.size() > 2) {
+            int idx = qBound(0, int(ptScene.x() / kx * Fe_), N - 1);
+            amp = Signal_[idx];
+        }
         QString txt = tr("Temps : %1 ms\nAmplitude : %2").arg(temps, 0, 'f', 1).arg(amp, 0, 'f', 2);
         QToolTip::showText(ui->graphicsView->viewport()->mapToGlobal(ptVue),
                            txt,
@@ -456,6 +488,7 @@ bool Pageprincipal::eventFilter(QObject *watched, QEvent *event)
 
     return QMainWindow::eventFilter(watched, event);
 }
+// Lance l'importation d'un signal externe (audio ou CSV)
 void Pageprincipal::importer()
 {
     essai();
@@ -464,6 +497,7 @@ void Pageprincipal::importer()
     }
     ui->actionExporter_csv->setEnabled(false);
 }
+// Exporte l'intégralité du signal courant au format CSV
 void Pageprincipal::exporter_csv_cliquer()
 {
     QString chemin = QFileDialog::getSaveFileName(this,
@@ -494,10 +528,12 @@ void Pageprincipal::exporter_csv_cliquer()
                              tr("Le signal a été exporter avec %1 points.").arg(Signal_.size()));
     fichier.close();
 }
+// TODO: export au format WAV à implémenter
 void Pageprincipal::exporter_wav_cliquer()
 {
     return;
 }
+// Exporte uniquement la portion sélectionnée du signal
 void Pageprincipal::exporter_selection(){
     QString chemin = QFileDialog::getSaveFileName(
         this,
@@ -533,10 +569,12 @@ void Pageprincipal::exporter_selection(){
         );
     fichier.close();
 }
+// Affiche le spectre de la sélection actuelle
 void Pageprincipal::fft_selection(){
     fft_.show();
     fft_.recupsignal(Selection,Fe_);
 }
+// Supprime la sélection de la scène et réinitialise les données
 void Pageprincipal::suppr_selection(){
     // 1. Retirer l'item de la scène
     scene_->removeItem(rectItem);

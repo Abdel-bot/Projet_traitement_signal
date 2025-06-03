@@ -1,6 +1,7 @@
 #include "fft.h"
 #include "ui_fft.h"
 
+// Constructeur : initialisation de la vue et de la scène graphique
 fft::fft(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::fft)
@@ -13,10 +14,12 @@ fft::fft(QWidget *parent)
     ui->graphicsView->viewport()->installEventFilter(this);
 }
 
+// Destructeur
 fft::~fft()
 {
     delete ui;
 }
+// Calcule la FFT du signal courant
 void fft::calculedelafft()
 {
     // 1) Zero-padding si nécessaire
@@ -58,11 +61,13 @@ void fft::calculedelafft()
     fft_ = a;
     dessin_spectre();
 }
+// Vérifie si la taille du signal est une puissance de 2
 bool fft::puissancede2()
 {
     return Signal_.size() > 0 && (Signal_.size() & (Signal_.size() - 1)) == 0;
 }
 
+// Ajoute des zéros pour atteindre la prochaine puissance de 2
 void fft::zeropadding()
 {
     // Exemples : si taille=6 → puissance=8
@@ -71,6 +76,7 @@ void fft::zeropadding()
         Signal_.append(0.0);
     }
 }
+// Inversion des bits pour la permutation bit-reverse
 int fft::reverse_bit(int x, unsigned bits)
 {
     uint32_t ux = static_cast<uint32_t>(x);
@@ -82,6 +88,7 @@ int fft::reverse_bit(int x, unsigned bits)
     return static_cast<int>(y);
 }
 
+// Applique la permutation bit-reverse à un tableau complexe
 void fft::bitReversalPermutation(QVector<std::complex<double>> &a)
 {
     int n = a.size();
@@ -93,6 +100,7 @@ void fft::bitReversalPermutation(QVector<std::complex<double>> &a)
         }
     }
 }
+// Trace le spectre de fréquence dans la vue
 void fft::dessin_spectre()
 {
     scene_->clear();
@@ -145,6 +153,7 @@ void fft::dessin_spectre()
 
     qDebug() << "Spectre tracé pour" << half << "bins jusqu'à" << (Fe_ / 2) << "Hz";
 }
+// Stocke le signal fourni puis lance le calcul de FFT
 void fft::recupsignal(const QVector<float> &samples, int sr)
 {
     Fe_ = sr;
@@ -153,6 +162,7 @@ void fft::recupsignal(const QVector<float> &samples, int sr)
         Signal_[i] = samples[i]; // ← redimensionne Signal_ à samples.size()
     calculedelafft();
 }
+// Trace les axes de référence dans la scène
 void fft::drawAxes()
 {
     const int w = ui->graphicsView->viewport()->width();
@@ -165,6 +175,7 @@ void fft::drawAxes()
     // Axe vertical (amplitude)
     scene_->addLine(0, 0, 0, h, axisPen);
 }
+// Gestion du zoom et de l'affichage d'informations sous la souris
 bool fft::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->graphicsView->viewport() && event->type() == QEvent::Wheel) {
@@ -187,7 +198,11 @@ bool fft::eventFilter(QObject *watched, QEvent *event)
         QPointF ptScene = ui->graphicsView->mapToScene(ptVue);
         float frequence = ptScene.x() / pxPerHz;
         float amp   = -ptScene.y() / h;
-        if(fft_.size()>2) amp   = (abs(fft_[ptScene.x()/pxPerHz*Fe_]));
+        if (fft_.size() > 0) {
+            int N = fft_.size();
+            int idx = qBound(0, int(frequence * N / Fe_), N - 1);
+            amp = std::abs(fft_[idx]);
+        }
         QString txt = tr("frequence : %1 Hz\nAmplitude : %2").
                       arg(frequence, 0, 'f', 1).
                       arg(amp,   0, 'f', 2);
